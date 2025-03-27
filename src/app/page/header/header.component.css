@@ -1,0 +1,11 @@
+.navbar {
+  margin-bottom: 20px;
+}
+
+.btn-link {
+  color: #007bff; 
+}
+
+  .btn-link:hover {
+    color: #0056b3;
+  }
