@@ -17,31 +17,34 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] User user)
     {
-        Console.WriteLine($"📩 Otrzymano request do rejestracji: Email={user?.Email}, Password={user?.Password}");
+        Console.WriteLine($"Otrzymano request do rejestracji: Email={user?.Email}, Password={user?.Password}");
 
         if (user == null)
         {
-            Console.WriteLine("❌ Błąd: Brak danych użytkownika w żądaniu!");
+            Console.WriteLine("Błąd: Brak danych użytkownika w żądaniu!");
             return BadRequest("Invalid request.");
         }
 
         if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.Password))
         {
-            Console.WriteLine("❌ Błąd: Email i hasło są wymagane.");
+            Console.WriteLine("Błąd: Email i hasło są wymagane.");
             return BadRequest("Email and password are required.");
         }
 
         var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
         if (existingUser != null)
         {
-            Console.WriteLine($"⚠️ Użytkownik z emailem {user.Email} już istnieje.");
+            Console.WriteLine($"Użytkownik z emailem {user.Email} już istnieje.");
             return Conflict("User with this email already exists.");
         }
+
+        // 🔥 Generowanie losowego Username
+        user.Username = "user_" + Guid.NewGuid().ToString("N").Substring(0, 8);
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        Console.WriteLine($"✅ Zarejestrowano nowego użytkownika: {user.Email}");
+        Console.WriteLine($"Zarejestrowano nowego użytkownika: {user.Email} z Username: {user.Username}");
         return Ok(user);
     }
 

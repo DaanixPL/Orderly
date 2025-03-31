@@ -14,11 +14,12 @@ namespace Orderly
             // Add CORS
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAllOrigins", builder =>
+                options.AddPolicy("AllowMyOrigin", policy =>
                 {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
+                    policy.WithOrigins("https://localhost:7238", "http://localhost:5086")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
                 });
             });
 
@@ -31,7 +32,9 @@ namespace Orderly
 
             var app = builder.Build();
 
-            app.UseCors("AllowAllOrigins");
+            // Use HTTPS redirection
+            app.UseHttpsRedirection();
+            app.UseCors("AllowMyOrigin");  // Use the appropriate CORS policy
             app.UseStaticFiles();
 
             // Automatically create database and tables
