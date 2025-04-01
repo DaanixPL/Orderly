@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Orderly.Models;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Identity.Data;
 
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly AppDbContext _context; private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
 
     public AuthController(AppDbContext context)
     {
@@ -17,62 +19,82 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] User user)
     {
-        Console.WriteLine($"Otrzymano request do rejestracji: Email={user?.Email}, Password={user?.Password}");
-
         if (user == null)
         {
-            Console.WriteLine("Błąd: Brak danych użytkownika w żądaniu!");
             return BadRequest("Invalid request.");
         }
 
-        if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.Password))
+        if (string.IsNullOrWhiteSpace(user.Email))
         {
-            Console.WriteLine("Błąd: Email i hasło są wymagane.");
-            return BadRequest("Email and password are required.");
+            return BadRequest("Email is required.");
         }
 
-        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+        if (string.IsNullOrWhiteSpace(user.Username))
+        {
+            return BadRequest("Username is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(user.Password))
+        {
+            return BadRequest("Password is required.");
+        }
+
+        var emailRegex = new Regex(@"^\S+@\S+\.\S+$");
+        if (!emailRegex.IsMatch(user.Email))
+        {
+            return BadRequest("The Email field is not a valid e-mail address.");
+        }
+
+        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email || u.Username == user.Username);
         if (existingUser != null)
         {
-            Console.WriteLine($"Użytkownik z emailem {user.Email} już istnieje.");
-            return Conflict("User with this email already exists.");
+            return Conflict("User with this email or username already exists.");
         }
 
-        // 🔥 Generowanie losowego Username
-        user.Username = "user_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+        user.PasswordHash = _passwordHasher.HashPassword(user, user.Password);
+        user.Password = null;
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        Console.WriteLine($"Zarejestrowano nowego użytkownika: {user.Email} z Username: {user.Username}");
         return Ok(user);
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] User loginUser)
+    public async Task<IActionResult> Login([FromBody] UserLoginRequest loginUser)
     {
-        Console.WriteLine($"📩 Otrzymano request do logowania: Email={loginUser?.Email}, Password={loginUser?.Password}");
-
         if (loginUser == null)
         {
-            Console.WriteLine("❌ Błąd: Brak danych logowania w żądaniu!");
             return BadRequest("Invalid request.");
         }
 
-        if (string.IsNullOrEmpty(loginUser.Email) || string.IsNullOrEmpty(loginUser.Password))
+
+        if (string.IsNullOrWhiteSpace(loginUser.EmailOrUsername))
         {
-            Console.WriteLine("❌ Błąd: Email i hasło są wymagane.");
-            return BadRequest("Email and password are required.");
+            return BadRequest("Either email or username is required.");
         }
 
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginUser.Email && u.Password == loginUser.Password);
+        if (string.IsNullOrWhiteSpace(loginUser.Password))
+        {
+            return BadRequest("Password is required.");
+        }
+
+        var user = loginUser.EmailOrUsername.Contains('@')
+              ? await _context.Users.FirstOrDefaultAsync(u => u.Email == loginUser.EmailOrUsername)
+              : await _context.Users.FirstOrDefaultAsync(u => u.Username == loginUser.EmailOrUsername);
+
+
         if (user == null)
         {
-            Console.WriteLine($"❌ Błąd logowania: Niepoprawny email lub hasło dla {loginUser.Email}");
-            return Unauthorized("Invalid email or password.");
+            return Unauthorized("Invalid email or username.");
         }
 
-        Console.WriteLine($"✅ Zalogowano użytkownika: {user.Email}");
+        var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginUser.Password);
+        if (passwordVerificationResult == PasswordVerificationResult.Failed)
+        {
+            return Unauthorized("Invalid password.");
+        }
+
         return Ok(user);
     }
 }

@@ -1,23 +1,27 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 [Table("User")]
 public class User
 {
     public int Id { get; set; }
 
-    [Required]
     [MaxLength(50)]
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
-    [Required]
     [EmailAddress]
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
-    [Required]
+    [NotMapped]
     [DataType(DataType.Password)]
-    public string Password { get; set; }
+    public string? Password { get; set; }
+
+    [BindNever]
+    [JsonIgnore]
+    public string? PasswordHash { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
