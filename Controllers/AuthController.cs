@@ -3,17 +3,25 @@ using Microsoft.EntityFrameworkCore;
 using Orderly.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Text.RegularExpressions;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.Extensions.Options;
 
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _context; private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
+    private readonly AppDbContext _context;
+    private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
+    private readonly JwtSettings _jwtSettings;
 
-    public AuthController(AppDbContext context)
+    public AuthController(AppDbContext context, IOptions<JwtSettings> jwtSettings)
     {
         _context = context;
+        _jwtSettings = jwtSettings.Value;
     }
 
     [HttpPost("register")]
@@ -68,7 +76,6 @@ public class AuthController : ControllerBase
             return BadRequest("Invalid request.");
         }
 
-
         if (string.IsNullOrWhiteSpace(loginUser.EmailOrUsername))
         {
             return BadRequest("Either email or username is required.");
@@ -83,7 +90,6 @@ public class AuthController : ControllerBase
               ? await _context.Users.FirstOrDefaultAsync(u => u.Email == loginUser.EmailOrUsername)
               : await _context.Users.FirstOrDefaultAsync(u => u.Username == loginUser.EmailOrUsername);
 
-
         if (user == null)
         {
             return Unauthorized("Invalid email or username.");
@@ -95,6 +101,29 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid password.");
         }
 
-        return Ok(user);
+        var token = GenerateJwtToken(user);
+        return Ok(new { Token = token });
+    }
+
+    private string GenerateJwtToken(User user)
+    {
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _jwtSettings.Issuer,
+            audience: _jwtSettings.Audience,
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(_jwtSettings.ExpirationMinutes),
+            signingCredentials: creds);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

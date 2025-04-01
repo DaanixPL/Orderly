@@ -1,48 +1,77 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Orderly.Models;
+using System.Text;
 
-namespace Orderly
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        Env.Load();
+
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddCors(options =>
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            builder.Services.AddCors(options =>
+            options.AddPolicy("AllowMyOrigin", policy =>
             {
-                options.AddPolicy("AllowMyOrigin", policy =>
-                {
-                    policy.WithOrigins("https://localhost:7238", "http://localhost:5086")
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
-                });
+                policy.WithOrigins("https://localhost:7238", "http://localhost:5086")
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials();
             });
+        });
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(Environment.GetEnvironmentVariable("defaultconnection")));
 
-            builder.Services.AddControllers();
+        builder.Services.Configure<JwtSettings>(options =>
+        {
+            options.SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+            options.Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+            options.Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+            options.ExpirationMinutes = int.Parse(Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES"));
+        });
 
-            var app = builder.Build();
-
-            app.UseHttpsRedirection();
-            app.UseCors("AllowMyOrigin"); 
-            app.UseStaticFiles();
-
-            using (var scope = app.Services.CreateScope())
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = "JwtBearer";
+            options.DefaultChallengeScheme = "JwtBearer";
+        }).AddJwtBearer("JwtBearer", options =>
+        {
+            var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                dbContext.Database.Migrate();
-            }
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+            };
+        });
 
-            app.MapControllers();
-            app.MapFallbackToFile("index.html");
+        builder.Services.AddControllers();
 
-            app.Run();
+        var app = builder.Build();
+
+        app.UseHttpsRedirection();
+        app.UseCors("AllowMyOrigin");
+        app.UseStaticFiles();
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            dbContext.Database.Migrate();
         }
+
+        app.MapControllers();
+        app.MapFallbackToFile("index.html");
+
+        app.Run();
     }
 }
