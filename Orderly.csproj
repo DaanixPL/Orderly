@@ -33,6 +33,15 @@
     <None Include="wwwroot\styles-DZ6UBGXD.css" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\package-lock.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="https://json.schemastore.org/appveyor.json" /></VisualStudio></ProjectExtensions>
 
 </Project>
