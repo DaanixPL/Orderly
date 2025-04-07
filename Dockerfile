@@ -2,8 +2,8 @@
 FROM node:20 AS builder
 
 WORKDIR /app
-COPY wwwroot/ ./wwwroot/
-WORKDIR /app/wwwroot
+COPY wwwroot/angular-app/ ./angular-app/
+WORKDIR /app/angular-app
 RUN npm install
 RUN npm run build -- --output-path=dist
 
@@ -20,6 +20,6 @@ RUN dotnet publish "Orderly.csproj" -c Release -o /app/publish
 # Stage 3:
 FROM base AS final
 WORKDIR /app
-COPY --from=builder /app/wwwroot/dist /app/wwwroot
+COPY --from=builder /app/angular-app/dist /app/wwwroot
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "Orderly.dll"]
