@@ -1,0 +1,10 @@
+  .home {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .home img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 1rem;
+  }

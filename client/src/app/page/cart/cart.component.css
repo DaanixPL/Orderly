@@ -1,0 +1,48 @@
+.cart-container {
+  padding: 20px;
+}
+
+.list-group {
+  margin: 20px 0;
+}
+
+.list-group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.total {
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.btn {
+  margin-left: 10px;
+}
+
+.container {
+  animation: fadeIn 1s ease-in-out;
+}
+
+.card {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

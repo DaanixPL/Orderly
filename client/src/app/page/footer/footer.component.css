@@ -1,0 +1,30 @@
+#footer {
+  padding: 20px 0; 
+  border-top: 1px solid #e7e7e7; 
+  background-color: rgba(248, 249, 250, 0.8); /* Semi-transparent background */
+  text-align: center; 
+  backdrop-filter: blur(10px); 
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 1000; /* Ensure it is above other content */
+}
+
+#footer .copyright-text {
+  margin: 0;
+  font-size: 14px; 
+  letter-spacing: 0.5px; 
+  color: #6c757d; 
+  text-align: center; 
+}
+
+#footer .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#footer p {
+  margin: 0;
+  color: #6c757d;
+}

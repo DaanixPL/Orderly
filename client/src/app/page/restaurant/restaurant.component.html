@@ -1,0 +1,26 @@
+<div class="container mt-5">
+  <div class="text-center mb-4">
+    <h2 class="display-4">{{ restaurant?.name }}</h2>
+    <img *ngIf="restaurant?.imageUrl" [src]="restaurant.imageUrl" class="img-fluid rounded" alt="{{ restaurant?.name }}">
+  </div>
+
+  <h3 class="mb-4">Menu</h3>
+  <div *ngIf="restaurant?.menuItems?.$values?.length > 0; else noMenu">
+    <div class="row">
+      <div *ngFor="let item of restaurant.menuItems.$values" class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ item.name }}</h5>
+            <p class="card-text">{{ item.description }}</p>
+            <p class="card-text font-weight-bold">{{ item.price | currency }}</p>
+            <button class="btn btn-success mt-auto" (click)="addToCart(item)">Add to cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noMenu>
+    <p class="text-muted">Brak dostępnych pozycji w menu.</p>
+  </ng-template>
+</div>
