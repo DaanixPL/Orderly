@@ -3,11 +3,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copy the project files and restore dependencies
-COPY ./api/*.csproj ./
+COPY *.csproj ./
 RUN dotnet restore
 
 # Copy the remaining files and build the project
-COPY ./api/ ./
+COPY . .
 RUN dotnet publish -c Release -o out
 
 # Use the official .NET 8 runtime image
@@ -18,4 +18,3 @@ COPY --from=build /app/out .
 # Expose port 80 and run the application
 EXPOSE 80
 ENTRYPOINT ["dotnet", "Orderly.Api.dll"]
-

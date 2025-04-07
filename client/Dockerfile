@@ -3,11 +3,11 @@ FROM node:18 AS build
 WORKDIR /app
 
 # Copy the project files and install dependencies
-COPY ./client/package*.json ./
+COPY package*.json ./
 RUN npm install
 
 # Copy the remaining files and build the project
-COPY ./client/ ./
+COPY . .
 RUN npm run build --prod
 
 # Use the official Nginx image to serve the Angular app
@@ -19,4 +19,3 @@ EXPOSE 80
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
-
