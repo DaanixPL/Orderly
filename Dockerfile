@@ -1,29 +1,28 @@
-# Stage 1: 
+# Stage 1: Build Angular app
 FROM node:20 AS builder
 
 WORKDIR /app
-COPY . .  # Skopiuj wszystko do /app
-WORKDIR /app/wwwroot  # Prze³¹cz na folder wwwroot
+COPY client ./client
 
-# Zainstaluj zale¿noœci i zbuduj aplikacjê
+WORKDIR /app/client
 RUN npm install
-RUN npm run build -- --output-path=dist
+RUN npm run build -- --output-path=../angular-dist
 
-# Stage 2: 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 80
-
+# Stage 2: Build .NET
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY . .
-
-# Publikacja aplikacji .NET
 RUN dotnet publish "Orderly.csproj" -c Release -o /app/publish
 
-# Stage 3:
-FROM base AS final
+# Stage 3: Final image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=builder /app/wwwroot/dist /app/wwwroot  # Skopiuj tylko folder dist do wwwroot
+
+# Skopiuj backend .NET
 COPY --from=build /app/publish .
+
+# Skopiuj zbudowan¹ aplikacjê Angular do wwwroot
+COPY --from=builder /app/angular-dist /app/wwwroot
+
+EXPOSE 80
 ENTRYPOINT ["dotnet", "Orderly.dll"]
