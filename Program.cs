@@ -24,7 +24,7 @@ public class Program
         });
 
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(Environment.GetEnvironmentVariable("defaultconnection")));
+            options.UseNpgsql(Environment.GetEnvironmentVariable("DefaultConnection")));
 
         builder.Services.Configure<JwtSettings>(options =>
         {
