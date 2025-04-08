@@ -61,6 +61,7 @@ public class Program
 
         var app = builder.Build();
 
+        app.UseExceptionHandler("/error");
         app.UseHttpsRedirection();
         app.UseCors("AllowSpecificOrigin");
         app.UseStaticFiles();
