@@ -14,9 +14,9 @@ public class Program
 
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowMyOrigin", policy =>
+            options.AddPolicy("AllowSpecificOrigin", policy =>
             {
-                policy.WithOrigins("https://localhost:7238", "http://localhost:5086")
+                policy.WithOrigins("https://orderly.vdanix.xyz", "https://orderly-9dp2.onrender.com")
                       .AllowAnyMethod()
                       .AllowAnyHeader()
                       .AllowCredentials();
@@ -62,7 +62,7 @@ public class Program
         var app = builder.Build();
 
         app.UseHttpsRedirection();
-        app.UseCors("AllowMyOrigin");
+        app.UseCors("AllowSpecificOrigin");
         app.UseStaticFiles();
         app.UseAuthentication();
         app.UseAuthorization();
