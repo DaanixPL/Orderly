@@ -61,6 +61,8 @@ public class Program
 
         var app = builder.Build();
 
+        app.Urls.Add("http://*:8080");
+
         app.UseExceptionHandler("/error");
         app.UseHttpsRedirection();
         app.UseCors("AllowSpecificOrigin");
