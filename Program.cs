@@ -61,7 +61,7 @@ public class Program
 
         var app = builder.Build();
 
-        app.Urls.Add("http://*:8080");
+        app.Urls.Add("https://*:443");
 
         app.UseExceptionHandler("/error");
         app.UseHttpsRedirection();
