@@ -64,7 +64,7 @@ public class Program
         app.Urls.Add("http://*:80");
 
         app.UseExceptionHandler("/error");
-        app.UseHttpsRedirection();
+  //      app.UseHttpsRedirection();
         app.UseCors("AllowSpecificOrigin");
         app.UseStaticFiles();
         app.UseAuthentication();
