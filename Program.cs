@@ -14,12 +14,12 @@ public class Program
 
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowAllOrigins", policy =>
+            options.AddPolicy("AllowSpecificOrigin", policy =>
             {
-                policy.AllowAnyOrigin() // Zezwala na dostêp z dowolnego Ÿród³a
-                      .AllowAnyMethod() // Zezwala na wszystkie metody (GET, POST, PUT, DELETE, itp.)
-                      .AllowAnyHeader() // Zezwala na wszystkie nag³ówki
-                      .AllowCredentials(); // Zezwala na przesy³anie danych uwierzytelniaj¹cych (np. cookies)
+                policy.WithOrigins("https://orderly.vdanix.xyz", "https://orderly-9dp2.onrender.com")
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials();
             });
         });
 
