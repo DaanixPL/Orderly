@@ -18,11 +18,11 @@ RUN dotnet publish "Orderly.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Skopiuj backend .NET
+ENV ASPNETCORE_URLS=http://+:8080
+
 COPY --from=build /app/publish .
 
-# Skopiuj zbudowan¹ aplikacjê Angular do wwwroot
 COPY --from=builder /app/angular-dist /app/wwwroot
 
-EXPOSE 80
+EXPOSE 8080
 ENTRYPOINT ["dotnet", "Orderly.dll"]

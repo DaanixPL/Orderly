@@ -1,7 +1,0 @@
-﻿version: '3.4'
-
-services:
-  orderly:
-    build: .
-    ports:
-      - "8080:80"
