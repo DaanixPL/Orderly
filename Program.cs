@@ -40,7 +40,12 @@ public class Program
             options.DefaultChallengeScheme = "JwtBearer";
         }).AddJwtBearer("JwtBearer", options =>
         {
-            var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+            var jwtSettings = new JwtSettings
+            {
+                SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY"),
+                Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
+                Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+            };
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -64,6 +69,7 @@ public class Program
         app.UseExceptionHandler("/error");
   //      app.UseHttpsRedirection();
         app.UseCors("AllowSpecificOrigin");
+        app.UseDefaultFiles();
         app.UseStaticFiles();
         app.UseAuthentication();
         app.UseAuthorization();
@@ -74,6 +80,7 @@ public class Program
             dbContext.Database.Migrate();
         }
 
+        app.UseRouting();
         app.MapControllers();
         app.MapFallbackToFile("index.html");
 

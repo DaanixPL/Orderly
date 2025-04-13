@@ -6,7 +6,7 @@ COPY client ./client
 
 WORKDIR /app/client
 RUN npm install
-RUN npm run build -- --output-path=dist/client/browser  
+RUN npm run build -- --output-path=dist/client/browser --base-href /
 # Stage 2: Build .NET
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
