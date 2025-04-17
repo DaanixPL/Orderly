@@ -1,4 +1,3 @@
-using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Orderly.Models;
@@ -8,8 +7,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        Env.Load();
-
+        // Usuwamy Env.Load(), bo Render ju¿ daje zmienne œrodowiskowe
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddCors(options =>
@@ -23,8 +21,12 @@ public class Program
             });
         });
 
+        // Zmieniamy wczytywanie zmiennych z pliku .env na œrodowiskowe
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(Environment.GetEnvironmentVariable("DefaultConnection")));
+
+        // Weryfikacja, czy zmienne s¹ za³adowane
+        Console.WriteLine("DefaultConnection: " + Environment.GetEnvironmentVariable("DefaultConnection"));
 
         builder.Services.Configure<JwtSettings>(options =>
         {
@@ -67,13 +69,13 @@ public class Program
         var app = builder.Build();
 
         app.UseExceptionHandler("/error");
-  //      app.UseHttpsRedirection();
         app.UseCors("AllowSpecificOrigin");
         app.UseDefaultFiles();
         app.UseStaticFiles();
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // Apply DB migrations
         using (var scope = app.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
