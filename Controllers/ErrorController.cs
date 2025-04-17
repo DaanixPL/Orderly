@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
+[Route("[controller]")]
 public class ErrorController : ControllerBase
 {
     [Route("/error")]
+    [AllowAnonymous]
     public IActionResult HandleError()
     {
         var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
