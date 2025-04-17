@@ -7,7 +7,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Usuwamy Env.Load(), bo Render ju¿ daje zmienne œrodowiskowe
+        
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddCors(options =>
