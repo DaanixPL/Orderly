@@ -1,15 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Orderly.Controllers
+[ApiController]
+public class ErrorController : ControllerBase
 {
-    [ApiController]
-    [Route("error")]
-    public class ErrorController : ControllerBase
+    [Route("/error")]
+    public IActionResult HandleError()
     {
-        [HttpGet]
-        public IActionResult Index()
-        {
-            return Content("<h1>Wystąpił błąd</h1><p>Proszę spróbować później.</p>", "text/html");
-        }
+        var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
+        var exception = context?.Error;
+
+        return Problem(
+            detail: exception?.StackTrace,
+            title: exception?.Message
+        );
     }
 }
