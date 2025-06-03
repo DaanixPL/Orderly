@@ -12,7 +12,7 @@ using Orderly.Models;
 namespace Orderly.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250417105725_InitialMigration")]
+    [Migration("20250603174620_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />

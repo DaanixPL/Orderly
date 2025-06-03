@@ -24,3 +24,4 @@ public class MenuItem
 
     public Restaurant? Restaurant { get; set; }
 }
+
